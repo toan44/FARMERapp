@@ -1,0 +1,14 @@
+('/Users/Toan/Google '
+ 'Drive/FARMERapp/TestFramework/test-framework-for-webapp/build/TestFramework/setuptools-23.0.0-py3.5.egg',
+ None,
+ {'*.pyc', '*.pyd', '*.pyo', 'EGG-INFO', '*.so', '*.py'},
+ 'DATA',
+ [('setuptools/script (dev).tmpl',
+   '/Users/Toan/Google '
+   'Drive/FARMERapp/TestFramework/test-framework-for-webapp/build/TestFramework/setuptools-23.0.0-py3.5.egg/setuptools/script '
+   '(dev).tmpl',
+   'DATA'),
+  ('setuptools/script.tmpl',
+   '/Users/Toan/Google '
+   'Drive/FARMERapp/TestFramework/test-framework-for-webapp/build/TestFramework/setuptools-23.0.0-py3.5.egg/setuptools/script.tmpl',
+   'DATA')])
