@@ -1,7 +1,6 @@
-import numpy, tkinter
-#from tkinter import Tk
-#from tkinter import filedialog
-from tkinter.filedialog import askopenfilename
+import numpy, os, datetime
+from tkinter import *
+from tkinter.filedialog import askopenfilename, askdirectory
 
 #=================helper functions==============
 #Conventions:
@@ -76,55 +75,147 @@ def ToXZ(RowVec3):
 
     return Translation, Rotation2.dot(Rotation1).dot(Rotation0), New
 
+def GetOutput(OriginalFile, REFIndexFile, InputFile, OutputFile):
+    Original = numpy.loadtxt(OriginalFile).astype(numpy.float)
+    REFIndex = numpy.loadtxt(REFIndexFile).astype(numpy.int)
+    Input = numpy.loadtxt(InputFile).astype(numpy.float)
+    
+    REF0 = Original[REFIndex]
+    REF1 = Input[:]
+    
+    Translation0, Rotation0, New0 = ToXZ(REF0)
+    Translation1, Rotation1, New1 = ToXZ(REF1)
+    
+    a0 = New0[1, 2]
+    b0 = New0[2, 2]
+    c0 = New0[2, 0]
+    a1 = New1[1, 2]
+    b1 = New1[2, 2]
+    c1 = New1[2, 0]
+    SX = c1/c0
+    KZ = (a0*b1 - a1*b0)/(a1*c0)
+    SZ = a1/a0
+    
+    ScaleShear = numpy.array([
+        [SX, 0, 0],
+        [0, 1, 0],
+        [SZ*KZ, 0, SZ]])
+    
+    New = Original + Translation0
+    New = MatrixOp(Rotation0, New)
+    New = MatrixOp(ScaleShear, New)
+    New = MatrixOp(numpy.linalg.inv(Rotation1), New)
+    New = New - Translation1
+    
+    numpy.savetxt(OutputFile, New, newline='\r\n')
+    
+    return New
+
 #==============================================
 #use dialogs to choose
-#Tk().withdraw()
-#list of coordinates of REFs and ROIs, row vectors, space delimited
-#OriginalFile = 'Original.txt'
-OriginalFile = askopenfilename(initialdir=".", title = "Original file")
+rootWin = Tk()
+rootWin.title('FARMER')
 
-#list of indices of REFs, in the combined list above, space delimited
-#note that counting starts from 0
-#REFIndexFile = 'REFIndex.txt'
-REFIndexFile = askopenfilename(initialdir=".", title = "Reference index file")
+StringList = ['working directory',
+              'original coordinates',
+              'REF indices',
+              'input REF coordinates',
+              'output file']
 
-#coordinates of REFs in the new session
-#InputFile = 'Input.txt'
-InputFile = askopenfilename(initialdir=".", title = "Input file")
+iString = 0
+String0 = StringVar()
+String0.set(os.getcwd())
+def GetString0():
+    global String0
+    String0.set(askdirectory(title = StringList[0]))
+Button0 = Button(rootWin, text = StringList[iString], command = GetString0)
+Button0.grid(row=iString, column=0, sticky = E) 
+Label0 = Label(rootWin, textvariable = String0)
+Label0.grid(row=iString, column=1, sticky = W)
 
-#output coordinates in the new session
-OutputFile = 'Output.txt'
-#OutputFile = askopenfilename(parent='.')
+iString = 1
+String1 = StringVar()
+def GetString1():
+    global String1
+    String1.set(askopenfilename(initialdir=String0.get(), title = StringList[1]))
+Button1 = Button(rootWin, text = StringList[iString], command = GetString1)
+Button1.grid(row=iString, column=0, sticky = E) 
+Label1 = Label(rootWin, textvariable = String1)
+Label1.grid(row=iString, column=1, sticky = W)
 
-Original = numpy.loadtxt(OriginalFile).astype(numpy.float)
-REFIndex = numpy.loadtxt(REFIndexFile).astype(numpy.int)
-Input = numpy.loadtxt(InputFile).astype(numpy.float)
+iString = 2
+String2 = StringVar()
+def GetString2():
+    global String2
+    String2.set(askopenfilename(initialdir=String0.get(), title = StringList[2]))
+Button2 = Button(rootWin, text = StringList[iString], command = GetString2)
+Button2.grid(row=iString, column=0, sticky = E) 
+Label2 = Label(rootWin, textvariable = String2)
+Label2.grid(row=iString, column=1, sticky = W)
 
-REF0 = Original[REFIndex]
-REF1 = Input[:]
+iString = 3
+String3 = StringVar()
+def GetString3():
+    global String3
+    String3.set(askopenfilename(initialdir=String0.get(), title = StringList[3]))
+Button3 = Button(rootWin, text = StringList[iString], command = GetString3)
+Button3.grid(row=iString, column=0, sticky = E) 
+Label3 = Label(rootWin, textvariable = String3)
+Label3.grid(row=iString, column=1, sticky = W)
 
-Translation0, Rotation0, New0 = ToXZ(REF0)
-Translation1, Rotation1, New1 = ToXZ(REF1)
+iString = 4
+String4 = StringVar()
+String4.set('Output')
+Entry4 = Entry(rootWin, textvariable = String4, justify = 'right')
+Entry4.grid(row = iString, column=0, sticky = E)
+Label4 = Label(rootWin, text = '.txt (enter output filename)')
+Label4.grid(row=iString, column=1, sticky = W)
 
-a0 = New0[1, 2]
-b0 = New0[2, 2]
-c0 = New0[2, 0]
-a1 = New1[1, 2]
-b1 = New1[2, 2]
-c1 = New1[2, 0]
-SX = c1/c0
-KZ = (a0*b1 - a1*b0)/(a1*c0)
-SZ = a1/a0
+OutputFilename = StringVar()
+OutputFilename.set(String0.get() + '/' + String4.get() + '.txt')
 
-ScaleShear = numpy.array([
-    [SX, 0, 0],
-    [0, 1, 0],
-    [SZ*KZ, 0, SZ]])
 
-New = Original + Translation0
-New = MatrixOp(Rotation0, New)
-New = MatrixOp(ScaleShear, New)
-New = MatrixOp(numpy.linalg.inv(Rotation1), New)
-New = New - Translation1
+def DisplayArray(Array, Row0 = 0, Col0 = 2):
+    Array = Array.astype(str)
+    for i in range(Array.shape[0]):
+        for j in range(Array.shape[1]):
+            Label5 = Label(text = Array[i, j], relief = RIDGE)
+            Label5.grid(row = i + Row0, column = j + Col0, sticky = NSEW)
 
-numpy.savetxt(OutputFile, New)
+def Calculate():
+    try:
+        Output = GetOutput(OriginalFile = String1.get(), 
+                           REFIndexFile = String2.get(), 
+                           InputFile = String3.get(), 
+                           OutputFile = OutputFilename.get())
+        #DisplayArray(Output)
+        TextOut = 'OK\t' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    except:
+        TextOut = 'error\t' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    Label5 = Label(rootWin, text = TextOut)
+    Label5.grid(row=5, column=1, sticky = W)
+        
+iString = iString + 1
+ButtonCalc = Button(rootWin, text = 'Calculate', command = Calculate)
+ButtonCalc.grid(row=iString, column=0, sticky = E)
+
+def Open():
+    os.system(OutputFilename.get())
+iString = iString + 1
+ButtonCalc = Button(rootWin, text = 'Open output', command = Open)
+ButtonCalc.grid(row=iString, column=0, sticky = E)
+Label6 = Label(rootWin, text = OutputFilename.get())
+Label6.grid(row=iString, column=1, sticky = W)
+
+iString = iString + 1
+ButtonStop = Button(rootWin, text = 'Stop', command = rootWin.quit)
+ButtonStop.grid(row=iString, column=0, sticky = E)
+
+#UpdateLabel()
+rootWin.update_idletasks()
+rootWin.mainloop()
+rootWin.destroy()
+
+
+
+
