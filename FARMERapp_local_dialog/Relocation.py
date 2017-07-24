@@ -172,8 +172,6 @@ Entry4 = Entry(rootWin, textvariable = String4, justify = 'right')
 Entry4.grid(row = iString, column=0, sticky = E)
 Label4 = Label(rootWin, text = '.txt (enter output filename)')
 Label4.grid(row=iString, column=1, sticky = W)
-OutputFilename = StringVar()
-OutputFilename.set(String0.get() + '/' + String4.get() + '.txt')
 
 NumForm = ['standard', 'scientific']
 iString = 5
@@ -196,7 +194,7 @@ def Calculate():
         Output = GetOutput(OriginalFile = String1.get(), 
                            REFIndexFile = String2.get(), 
                            InputFile = String3.get(), 
-                           OutputFile = OutputFilename.get(),
+                           OutputFile = String0.get() + '/' + String4.get() + '.txt',
                            NumForm = String5.get())
         #DisplayArray(Output)
         TextOut = 'OK\t' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -210,18 +208,18 @@ ButtonCalc = Button(rootWin, text = 'calculate', command = Calculate)
 ButtonCalc.grid(row=iString, column=0, sticky = E)
 
 def Open():
-    os.system(OutputFilename.get())
+    os.system('"' + String0.get() + '/' + String4.get() + '.txt' + '"')
 iString = iString + 1
 ButtonCalc = Button(rootWin, text = 'open output', command = Open)
 ButtonCalc.grid(row=iString, column=0, sticky = E)
-Label6 = Label(rootWin, text = OutputFilename.get())
-Label6.grid(row=iString, column=1, sticky = W)
+#Label6 = Label(rootWin, textvariable = String4)
+#Label6.grid(row=iString, column=1, sticky = W)
 
 iString = iString + 1
 ButtonStop = Button(rootWin, text = 'stop', command = rootWin.quit)
 ButtonStop.grid(row=iString, column=0, sticky = E)
 
 #UpdateLabel()
-rootWin.update_idletasks()
+rootWin.update()#_idletasks()
 rootWin.mainloop()
 rootWin.destroy()
