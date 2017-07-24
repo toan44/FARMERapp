@@ -75,7 +75,7 @@ def ToXZ(RowVec3):
 
     return Translation, Rotation2.dot(Rotation1).dot(Rotation0), New
 
-def GetOutput(OriginalFile, REFIndexFile, InputFile, OutputFile):
+def GetOutput(OriginalFile, REFIndexFile, InputFile, OutputFile, NumForm = 'standard'):
     Original = numpy.loadtxt(OriginalFile).astype(numpy.float)
     REFIndex = numpy.loadtxt(REFIndexFile).astype(numpy.int)
     Input = numpy.loadtxt(InputFile).astype(numpy.float)
@@ -107,7 +107,9 @@ def GetOutput(OriginalFile, REFIndexFile, InputFile, OutputFile):
     New = MatrixOp(numpy.linalg.inv(Rotation1), New)
     New = New - Translation1
     
-    numpy.savetxt(OutputFile, New, newline='\r\n')
+    if NumForm == 'standard': Format = '%.5f'
+    else: Format = '%.18e'
+    numpy.savetxt(OutputFile, New, newline='\r\n', fmt=Format)
     
     return New
 
@@ -170,10 +172,17 @@ Entry4 = Entry(rootWin, textvariable = String4, justify = 'right')
 Entry4.grid(row = iString, column=0, sticky = E)
 Label4 = Label(rootWin, text = '.txt (enter output filename)')
 Label4.grid(row=iString, column=1, sticky = W)
-
 OutputFilename = StringVar()
 OutputFilename.set(String0.get() + '/' + String4.get() + '.txt')
 
+NumForm = ['standard', 'scientific']
+iString = 5
+String5 = StringVar()
+String5.set(NumForm[0])
+Option = OptionMenu(rootWin, String5, *NumForm)
+Option.grid(row = iString, column = 0, sticky = E)
+LabelOption = Label(rootWin, text = 'number format')
+LabelOption.grid(row = iString, column = 1, sticky = W)
 
 def DisplayArray(Array, Row0 = 0, Col0 = 2):
     Array = Array.astype(str)
@@ -187,35 +196,32 @@ def Calculate():
         Output = GetOutput(OriginalFile = String1.get(), 
                            REFIndexFile = String2.get(), 
                            InputFile = String3.get(), 
-                           OutputFile = OutputFilename.get())
+                           OutputFile = OutputFilename.get(),
+                           NumForm = String5.get())
         #DisplayArray(Output)
         TextOut = 'OK\t' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     except:
         TextOut = 'error\t' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     Label5 = Label(rootWin, text = TextOut)
-    Label5.grid(row=5, column=1, sticky = W)
+    Label5.grid(row=6, column=1, sticky = W)
         
 iString = iString + 1
-ButtonCalc = Button(rootWin, text = 'Calculate', command = Calculate)
+ButtonCalc = Button(rootWin, text = 'calculate', command = Calculate)
 ButtonCalc.grid(row=iString, column=0, sticky = E)
 
 def Open():
     os.system(OutputFilename.get())
 iString = iString + 1
-ButtonCalc = Button(rootWin, text = 'Open output', command = Open)
+ButtonCalc = Button(rootWin, text = 'open output', command = Open)
 ButtonCalc.grid(row=iString, column=0, sticky = E)
 Label6 = Label(rootWin, text = OutputFilename.get())
 Label6.grid(row=iString, column=1, sticky = W)
 
 iString = iString + 1
-ButtonStop = Button(rootWin, text = 'Stop', command = rootWin.quit)
+ButtonStop = Button(rootWin, text = 'stop', command = rootWin.quit)
 ButtonStop.grid(row=iString, column=0, sticky = E)
 
 #UpdateLabel()
 rootWin.update_idletasks()
 rootWin.mainloop()
 rootWin.destroy()
-
-
-
-
